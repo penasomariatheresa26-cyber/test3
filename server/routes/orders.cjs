@@ -7,7 +7,6 @@ router.get('/', async (req, res) => {
   try {
     const { user_id, is_admin } = req.query;
 
-    // Fetch orders
     let orderSql = 'SELECT * FROM orders';
     const orderParams = [];
     if (is_admin !== 'true' && user_id) {
@@ -18,7 +17,6 @@ router.get('/', async (req, res) => {
 
     const ordersResult = await db.query(orderSql, orderParams);
 
-    // For each order, fetch its items with menu item details
     const orders = [];
     for (const row of ordersResult.rows) {
       const itemsResult = await db.query(
@@ -44,6 +42,7 @@ router.get('/', async (req, res) => {
           featured: !!i.m_featured,
         },
         quantity: i.quantity,
+        price: parseFloat(i.price),
       }));
 
       orders.push({
@@ -71,24 +70,53 @@ router.post('/', async (req, res) => {
   const conn = await db.pool.connect();
   try {
     await conn.query('START TRANSACTION');
-    const { id, user_id, customer_name, address, phone, payment_method, total, items } = req.body;
 
+    const { id, user_id, customer_name, address, phone, payment_method, total, items } = req.body;
+    const orderId = id || 'ORD-' + Date.now();
+
+    // insert into orders table
     await conn.query(
-      'INSERT INTO orders (id,user_id,customer_name,address,phone,payment_method,status,total) VALUES (?,?,?,?,?,?,?,?)',
-      [id, user_id, customer_name, address, phone, payment_method || 'cash-on-delivery', 'pending', total]
+      'INSERT INTO orders (id,user_id,customer_name,address,phone,payment_method,status,total,created_at) VALUES (?,?,?,?,?,?,?,?,NOW())',
+      [
+        orderId,
+        user_id,
+        customer_name,
+        address,
+        phone,
+        payment_method || 'cash-on-delivery',
+        'pending',
+        parseFloat(total),
+      ]
     );
 
     for (const item of items) {
-      const itemId = 'oi-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+      const itemId = 'OI-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
       await conn.query(
         'INSERT INTO order_items (id,order_id,menu_item_id,quantity,price) VALUES (?,?,?,?,?)',
-        [itemId, id, item.menuItem.id, item.quantity, item.menuItem.price]
+        [itemId, orderId, item.menuItem.id, item.quantity, parseFloat(item.menuItem.price)]
       );
     }
 
     await conn.query('COMMIT');
-    console.log(`[NEW ORDER] ${id} → ₱${total} → ${items.length} items → MySQL`);
-    res.status(201).json({ id, status: 'pending' });
+    console.log(`[NEW ORDER] ${orderId} → ₱${total} → ${items.length} items → MySQL`);
+
+    // return full order object including items so frontend can update immediately
+    res.status(201).json({
+      id: orderId,
+      user_id,
+      customerName: customer_name,
+      address,
+      phone,
+      paymentMethod: payment_method || 'cash-on-delivery',
+      status: 'pending',
+      total: parseFloat(total),
+      createdAt: new Date().toISOString(),
+      items: items.map(i => ({
+        menuItem: i.menuItem,
+        quantity: i.quantity,
+        price: parseFloat(i.menuItem.price),
+      })),
+    });
   } catch (error) {
     await conn.query('ROLLBACK');
     console.error('[POST /api/orders]', error.message);
