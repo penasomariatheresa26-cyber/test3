@@ -1,84 +1,119 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Aiven MySQL connection
-// Format: mysql://user:password@host:port/database?ssl-mode=REQUIRED
 let pool;
+
+function createPoolConfig() {
+  const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+
+  if (dbUrl) {
+    const url = new URL(dbUrl);
+
+    return {
+      host: url.hostname,
+      port: Number(url.port || 3306),
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      database: url.pathname.replace('/', ''),
+      ssl: { rejectUnauthorized: false },
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    };
+  }
+
+  const host = process.env.DB_HOST || process.env.MYSQL_HOST;
+  const port = process.env.DB_PORT || process.env.MYSQL_PORT;
+  const user = process.env.DB_USER || process.env.MYSQL_USER;
+  const password = process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD;
+  const database = process.env.DB_NAME || process.env.MYSQL_DATABASE;
+
+  if (!host || !user || !password || !database) {
+    console.error('❌ no database configuration found');
+    return null;
+  }
+
+  return {
+    host,
+    port: Number(port || 3306),
+    user,
+    password,
+    database,
+    ssl: { rejectUnauthorized: false },
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  };
+}
 
 function getPool() {
   if (!pool) {
-    const dbUrl = process.env.DATABASE_URL;
+    const config = createPoolConfig();
 
-    if (dbUrl) {
-      // Parse Aiven MySQL connection string
-      const url = new URL(dbUrl);
-      pool = mysql.createPool({
-        host: url.hostname,
-        port: parseInt(url.port) || 3306,
-        user: url.username,
-        password: url.password,
-        database: url.pathname.replace('/', ''),
-        ssl: { rejectUnauthorized: false },
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-      });
-    } else if (process.env.DB_HOST) {
-      // Individual env vars
-      pool = mysql.createPool({
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT) || 3306,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-      });
-    } else {
-      console.error('❌ No database configuration found');
-      return null;
-    }
+    if (!config) return null;
+
+    pool = mysql.createPool(config);
   }
+
   return pool;
 }
 
-// Query wrapper — returns { rows } to keep same interface
-async function query(sql, params) {
+async function query(sql, params = []) {
   const p = getPool();
-  if (!p) throw new Error('Database not configured');
-  const [rows] = await p.execute(sql, params || []);
+
+  if (!p) {
+    throw new Error('database not configured');
+  }
+
+  const [rows] = await p.execute(sql, params);
   return { rows };
 }
 
-// Get raw pool for transactions
-function getRawPool() {
-  return getPool();
+async function getConnection() {
+  const p = getPool();
+
+  if (!p) {
+    throw new Error('database not configured');
+  }
+
+  return p.getConnection();
 }
 
-// Test connection
 async function testConnection() {
   try {
     const p = getPool();
+
     if (!p) return false;
+
     const conn = await p.getConnection();
-    console.log('✅ Connected to MySQL database');
+    await conn.ping();
     conn.release();
+
+    console.log('✅ connected to mysql database');
     return true;
-  } catch (err) {
-    console.error('❌ MySQL connection error:', err.message);
+  } catch (error) {
+    console.error('❌ mysql connection error:', error.message);
     return false;
   }
 }
 
 testConnection();
 
-module.exports = { query, pool: { connect: async () => {
-  const p = getPool();
-  const conn = await p.getConnection();
-  return {
-    query: (sql, params) => conn.execute(sql, params || []),
-    release: () => conn.release(),
-  };
-}}};
+module.exports = {
+  query,
+  getPool,
+  getConnection,
+  pool: {
+    connect: async () => {
+      const conn = await getConnection();
+
+      return {
+        query: async (sql, params = []) => {
+          const [rows] = await conn.query(sql, params);
+          return { rows };
+        },
+        release: () => conn.release(),
+      };
+    },
+  },
+};
