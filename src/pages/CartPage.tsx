@@ -216,24 +216,47 @@ export default function CartPage({ onNavigate }: CartPageProps) {
                         onChange={e => setBarangay(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary outline-none bg-white"
                       >
-                        <option value="">Select Barangay</option>
-                        <option value="Poblacion">Poblacion</option>
-                        <option value="Ambacon">Ambacon</option>
-                        <option value="Bangon">Bangon</option>
-                        <option value="Cabuynan">Cabuynan</option>
-                        <option value="Calag-itan">Calag-itan</option>
-                        <option value="Canamucan">Canamucan</option>
-                        <option value="Canap-acan">Canap-acan</option>
-                        <option value="Mag-aso">Mag-aso</option>
-                        <option value="Magtino">Magtino</option>
-                        <option value="Nahulid">Nahulid</option>
-                        <option value="Otikon">Otikon</option>
-                        <option value="Panalaron">Panalaron</option>
-                        <option value="San Vicente">San Vicente</option>
-                        <option value="Tahusan">Tahusan</option>
-                        <option value="Talisay">Talisay</option>
-                        <option value="Toptop">Toptop</option>
-                        <option value="Tugawe">Tugawe</option>
+                       <option value="">Select Barangay</option>
+    <option value="Ambacon">Ambacon</option>
+    <option value="Badiangon">Badiangon</option>
+    <option value="Bangcas A">Bangcas A</option>
+    <option value="Bangcas B">Bangcas B</option>
+    <option value="Biasong">Biasong</option>
+    <option value="Bugho">Bugho</option>
+    <option value="Calag-itan">Calag-itan</option>
+    <option value="Calayugan">Calayugan</option>
+    <option value="Calinao">Calinao</option>
+    <option value="Canipaan">Canipaan</option>
+    <option value="Catublian">Catublian</option>
+    <option value="Ilaya">Ilaya</option>
+    <option value="Ingan">Ingan</option>
+    <option value="Labrador">Labrador</option>
+    <option value="Libas">Libas</option>
+    <option value="Lumbog">Lumbog</option>
+    <option value="Manalog">Manalog</option>
+    <option value="Manlico">Manlico</option>
+    <option value="Matin-ao">Matin-ao</option>
+    <option value="Nava">Nava</option>
+    <option value="Nueva Esperanza">Nueva Esperanza</option>
+    <option value="Otama">Otama</option>
+    <option value="Palongpong">Palongpong</option>
+    <option value="Panalaron">Panalaron</option>
+    <option value="Patong">Patong</option>
+    <option value="Poblacion">Poblacion</option>
+    <option value="Pondol">Pondol</option>
+    <option value="Salog">Salog</option>
+    <option value="Salvacion">Salvacion</option>
+    <option value="San Pablo Island">San Pablo Island</option>
+    <option value="San Pedro Island">San Pedro Island</option>
+    <option value="Santo Niño I">Santo Niño I</option>
+    <option value="Santo Niño II">Santo Niño II</option>
+    <option value="Tahusan">Tahusan</option>
+    <option value="Talisay">Talisay</option>
+    <option value="Tawog">Tawog</option>
+    <option value="Toptop">Toptop</option>
+    <option value="Tuburan">Tuburan</option>
+    <option value="Union">Union</option>
+    <option value="Upper Bantawon">Upper Bantawon</option>
                       </select>
                     </div>
                   </div>
