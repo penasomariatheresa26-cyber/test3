@@ -1,20 +1,15 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "theresse-food-menu",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node start.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.105.3",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/pg": "^8.20.0",
     "bcryptjs": "^3.0.3",
     "clsx": "2.1.1",
     "cors": "^2.8.6",
@@ -23,7 +18,6 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.14.0",
     "mysql2": "^3.22.4",
-    "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
