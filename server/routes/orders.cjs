@@ -100,7 +100,7 @@ router.post('/', async (req, res) => {
     await conn.query('COMMIT');
     console.log(`[NEW ORDER] ${orderId} → ₱${total} → ${items.length} items → MySQL`);
 
-    // return full order object including items so frontend can update immediately
+    // return full order object including items so frontend and admin dashboard can update immediately
     res.status(201).json({
       id: orderId,
       user_id,
