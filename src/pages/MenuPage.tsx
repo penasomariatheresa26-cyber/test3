@@ -1,38 +1,24 @@
+// File: src/pages/MenuPage.tsx
 import React, { useEffect, useState } from 'react';
-import MenuCard from '../components/MenuCard';
+import MenuCard from '../components/MenuCard'; // make sure the file is exactly MenuCard.tsx
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  available: boolean;
-  featured: boolean;
-}
-
-const MenuPage: React.FC = () => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+export default function MenuPage() {
+  const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const res = await fetch('/api/menu'); // your backend route
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data: MenuItem[] = await res.json();
+    fetch('/api/menu')
+      .then(res => res.json())
+      .then(data => {
         setMenuItems(data);
-      } catch (err) {
-        console.error('Failed to fetch menu:', err);
-        setError('Failed to load menu items. Please try again later.');
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchMenu();
+      })
+      .catch(err => {
+        console.error('Failed to fetch menu:', err);
+        setError('Unable to load menu.');
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <p className="text-center py-10">Loading menu...</p>;
@@ -40,9 +26,9 @@ const MenuPage: React.FC = () => {
 
   return (
     <div className="menu-page container mx-auto py-10">
-      {menuItems.length > 0 ? (
+      {menuItems && menuItems.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
+          {menuItems.map(item => (
             <MenuCard key={item.id} {...item} />
           ))}
         </div>
@@ -51,6 +37,4 @@ const MenuPage: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default MenuPage;
+}
