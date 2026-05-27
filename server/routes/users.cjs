@@ -52,7 +52,7 @@ router.post('/register', async (req, res) => {
     await db.query(
       `
       INSERT INTO users 
-      (name, email, password_hash, role, wallet_balance) 
+      (name, email, password, role, wallet_balance) 
       VALUES (?, ?, ?, 'user', 0.00)
       `,
       [name, email.toLowerCase(), passwordHash]
@@ -116,7 +116,7 @@ router.post('/login', async (req, res) => {
         id,
         name,
         email,
-        password_hash,
+        password,
         role,
         wallet_balance,
         created_at,
@@ -135,11 +135,11 @@ router.post('/login', async (req, res) => {
 
     let isValidPassword = false;
 
-    if (user.password_hash && user.password_hash.startsWith('$2')) {
-      isValidPassword = await bcrypt.compare(password, user.password_hash);
+    if (user.password && user.password.startsWith('$2')) {
+      isValidPassword = await bcrypt.compare(password, user.password);
     } else {
       // supports your current sample data like admin123/user123 in workbench
-      isValidPassword = password === user.password_hash;
+      isValidPassword = password === user.password;
     }
 
     if (!isValidPassword) {
